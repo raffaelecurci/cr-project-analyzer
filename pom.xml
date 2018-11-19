@@ -46,18 +46,60 @@
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-		<groupId>cr</groupId>
-		<artifactId>cr-micro-eureka-shared</artifactId>
+			<groupId>cr</groupId>
+			<artifactId>cr-micro-eureka-shared</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
+			<!-- <version>4.12</version> -->
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>com.vaadin.external.google</groupId>
+					<artifactId>android-json</artifactId>
+				</exclusion>
+			</exclusions>
+			<scope>test</scope>
+		</dependency>
 
+<!-- 		<dependency> -->
+<!-- 			<groupId>com.offbytwo.jenkins</groupId> -->
+<!-- 			<artifactId>jenkins-client</artifactId> -->
+<!-- 			<version>0.3.8</version> -->
+<!-- 		</dependency> -->
+		
+<!-- 		<dependency> -->
+<!--     <groupId>com.google.guava</groupId> -->
+<!--     <artifactId>guava</artifactId> -->
+<!--     <version>18.0</version> -->
+<!-- </dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>com.cdancy</groupId> -->
+<!-- 			<artifactId>jenkins-rest</artifactId> -->
+<!-- 			<version>0.0.14</version> -->
+<!-- 		</dependency> -->
+
+
+
+
+		<dependency>
+			<groupId>org.eclipse.jgit</groupId>
+			<artifactId>org.eclipse.jgit</artifactId>
+		</dependency>
+	</dependencies>
+<repositories>
+    <repository> 
+        <id>repository.spring.plugin-release</id> 
+        <name>Spring Plugins Repository</name> 
+        <url>http://repo.spring.io/plugins-release/</url> 
+    </repository>
+</repositories>
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
