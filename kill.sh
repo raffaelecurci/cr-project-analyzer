@@ -13,6 +13,6 @@ if [ -z "$var" ]
 then
       echo "no tomcat running"
 else
-      kill $(lsof -i :${array[-1]} | awk '{if (NR!=1) {print $2}}')
+      kill -9 $(lsof -i :${array[-1]} | awk '{if (NR!=1) {print $2}}')
 fi
 

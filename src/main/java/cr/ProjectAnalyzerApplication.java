@@ -10,16 +10,16 @@ import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
 
 import cr.annotation.QueueDefinition;
 
-@QueueDefinition(rpcClient={"db"},encryption="PlainText",queues= {"res"},excludeListeners= {"res"})
+@QueueDefinition(rpcServer= {"ana"},rpcClient={"db","bui"},encryption="PlainText",queues= {"ana","bui","res"}, excludeListeners= {"bui","res"})
 @RefreshScope
 @SpringBootApplication
 @EnableRabbit
 @EnableDiscoveryClient
-public class ProjectBuilderApplication extends SpringBootServletInitializer {
+public class ProjectAnalyzerApplication extends SpringBootServletInitializer {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ProjectBuilderApplication.class, args);
+		SpringApplication.run(ProjectAnalyzerApplication.class, args);
 	}
-
+	
 }
 

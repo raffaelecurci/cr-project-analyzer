@@ -23,7 +23,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 
-import cr.ProjectBuilderApplication;
+import cr.ProjectAnalyzerApplication;
 import cr.generated.ops.service.RPCClient;
 import cr.interf.EncryptedMessage;
 import cr.shared.BuildRecord;
@@ -38,11 +38,11 @@ import cr.util.RepoHandler;
 @RefreshScope
 @EnableAsync
 @Service
-public class BuilderManager {
+public class _BuilderManager {
 	@Autowired
 	private RPCClient client;
-	private static String encryption=ProjectBuilderApplication.class.getAnnotation(cr.annotation.QueueDefinition.class).encryption();
-	private static Logger log = LoggerFactory.getLogger(BuilderManager.class);
+	private static String encryption=ProjectAnalyzerApplication.class.getAnnotation(cr.annotation.QueueDefinition.class).encryption();
+	private static Logger log = LoggerFactory.getLogger(_BuilderManager.class);
 	
 	@Value("${projects.storage}")
 	private String storagePath;
@@ -54,7 +54,7 @@ public class BuilderManager {
 	
 	@Async
 	public void checkBuildVerifyScan() {
-		check();
+//		check();
 	}
 	
 	private void check() {
@@ -206,7 +206,7 @@ public class BuilderManager {
 			System.out.println("SecurityProjectId: "+securityProjectId);
 			br.setIdSecurityProject(securityProjectId);
 			br.setStoragefolder(clonedProject);
-			System.err.println("Requesting:"+br);
+			System.out.println("Requesting:"+br);
 			br.setId(((BuildRecord)(client.sendAndReceiveDb(br.toEncryptedMessage(encryption).encodeBase64())).decodeBase64ToObject()).getId());
 			result[i[0]]=new Object[] {br,splist.getProject()};
 			i[0]++;
