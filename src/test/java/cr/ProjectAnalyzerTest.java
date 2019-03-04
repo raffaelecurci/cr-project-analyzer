@@ -1,23 +1,39 @@
 package cr;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Paths;
 
 import javax.xml.bind.DatatypeConverter;
 
+import org.eclipse.jgit.api.CloneCommand;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.TransportConfigCallback;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.transport.JschConfigSessionFactory;
+import org.eclipse.jgit.transport.OpenSshConfig;
+import org.eclipse.jgit.transport.SshSessionFactory;
+import org.eclipse.jgit.transport.SshTransport;
+import org.eclipse.jgit.transport.Transport;
+import org.eclipse.jgit.util.FS;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 
 import cr.generated.ops.service.RPCClient;
 import cr.service._BuilderManager;
 import cr.util.JenkinsAdapter;
+import cr.util.RepoHandler;
 
 //@RunWith(SpringRunner.class)
 //@SpringBootTest
@@ -45,10 +61,10 @@ public class ProjectAnalyzerTest {
 		String remoteRepo = "https://username@destinationrepository/path/destinationproject.git";
 		String user = "username";
 		String passwd = "password";
-//		RepoHandler r = new RepoHandler();
-//		r.cloneRepo(localRepo, repoUrl, user, passwd);
-//		/* clone */
-//		r.rebaseRemoteBuffer(localRepo, remoteRepo, user, passwd);
+		// RepoHandler r = new RepoHandler();
+		// r.cloneRepo(localRepo, repoUrl, user, passwd);
+		// /* clone */
+		// r.rebaseRemoteBuffer(localRepo, remoteRepo, user, passwd);
 
 		// StringTokenizer st=new StringTokenizer(url, "//");
 		// String protocol=st.nextToken();
@@ -75,6 +91,70 @@ public class ProjectAnalyzerTest {
 		// System.out.println(qwe);
 	}
 
+	@Test
+	public void testCloneSubModules() throws InvalidRemoteException, TransportException, IOException, GitAPIException {
+		String address = "domain:8443/scm/rez/basketservice.git";
+		String destinationFolder = "/home/fefe/git/jgitexample";
+		String repoUsername = "user";
+		String repoPasswd = "password";
+		String branch = "dev";
+		String commit = "8a4faec4ab0ac9e9b67634924773d96b0183fff0";
+
+		String remoteRepo = "https://user@domain:8443/scm/ver/msbuild.git";
+
+		RepoHandler r = new RepoHandler();
+		String completeUrl = "https://" + repoUsername + "@" + address;
+		r.cloneRepo(destinationFolder, completeUrl, repoUsername, repoPasswd, branch, commit);
+		gitInit(destinationFolder);
+		r.rebaseRemoteBuffer(destinationFolder, remoteRepo, repoUsername, repoPasswd);
+	}
+
+	private void gitInit(String localRepo) throws IllegalStateException, GitAPIException {
+		deleteFolder(localRepo + "/.git");
+		Git git = Git.init().setDirectory(new File(localRepo)).call();
+		git.add().addFilepattern(".").call();
+		git.commit().setMessage("automatic-rebase").call();
+	}
+
+	private void deleteFolder(String localRepo) {
+		File index = new File(localRepo);
+		String[] entries = index.list();
+		for (String s : entries) {
+			File currentFile = new File(index.getPath(), s);
+			if (currentFile.isDirectory())
+				deleteFolder(currentFile.getPath());
+			currentFile.delete();
+		}
+	}
+
+	// @Test
+	public void sshClone() throws InvalidRemoteException, TransportException, GitAPIException {
+		String destinationFolder = "/home/fefe/git/jgitexample";
+		SshSessionFactory sshSessionFactory = new JschConfigSessionFactory() {
+			@Override
+			protected void configure(OpenSshConfig.Host host, Session session) {
+				// do nothing
+			}
+
+			@Override
+			protected JSch createDefaultJSch(FS fs) throws JSchException {
+				JSch defaultJSch = super.createDefaultJSch(fs);
+				return defaultJSch;
+			}
+		};
+		CloneCommand cloneCommand = Git.cloneRepository();
+		cloneCommand.setURI("ssh://git@domain:7999/rez/basketseednode.git");
+		cloneCommand.setTransportConfigCallback(new TransportConfigCallback() {
+			@Override
+			public void configure(Transport transport) {
+				SshTransport sshTransport = (SshTransport) transport;
+				sshTransport.setSshSessionFactory(sshSessionFactory);
+			}
+		});
+
+		cloneCommand.setDirectory(Paths.get(destinationFolder).toFile()).call();
+	}
+
 	// @Test
 	public void triggerJenkins() throws IOException, InterruptedException {
 		// JenkinsServer js = new JenkinsServer(URI.create("http://ip:8080"),
@@ -88,8 +168,7 @@ public class ProjectAnalyzerTest {
 		// js.getJob("Java").build(true);
 		// System.out.println("ok");
 
-		JenkinsAdapter ja = new JenkinsAdapter("jenkinsuser", "jenkinsapitoken",
-				"http://192.168.56.3:8080");
+		JenkinsAdapter ja = new JenkinsAdapter("jenkinsuser", "jenkinsapitoken", "http://192.168.56.3:8080");
 		System.out.println(ja.buildJob("Java"));
 
 		// SystemInfo systemInfo = client.api().systemApi().systemInfo();
@@ -126,15 +205,17 @@ public class ProjectAnalyzerTest {
 			e.printStackTrace();
 		}
 	}
-//	@Test
+
+	// @Test
 	public void Jenkins() {
-		JenkinsAdapter jn=new JenkinsAdapter("jenkinsuser", "jenkinsapitoken", "http://192.168.56.3:8080");
+		JenkinsAdapter jn = new JenkinsAdapter("jenkinsuser", "jenkinsapitoken", "http://192.168.56.3:8080");
 		System.out.println(jn.buildJob("Java"));
 	}
-	@Test
+
+	// @Test
 	public void getLastBuildResult() {
-		JenkinsAdapter ja = new JenkinsAdapter("admin", "tr1m0n3","http://192.168.56.3:8080");
-		System.out.println(ja.isBuilding("Java")); 
-		System.out.println( ja.isBuilding("Java",new Long("69")) );
+		JenkinsAdapter ja = new JenkinsAdapter("admin", "password", "http://192.168.56.3:8080");
+		System.out.println(ja.isBuilding("Java"));
+		System.out.println(ja.isBuilding("Java", new Long("69")));
 	}
 }

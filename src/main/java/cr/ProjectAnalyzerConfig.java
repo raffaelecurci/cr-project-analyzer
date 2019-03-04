@@ -26,19 +26,24 @@ public class ProjectAnalyzerConfig {
 	@Autowired
 	private ConnectionFactory connectionFactory;
 
-	@Bean
-	public DeclareOk getDeclareOk() {
-		try {
-			Connection conn = connectionFactory.newConnection();
-			Channel channel = conn.createChannel();
-			return channel.queueDeclarePassive(buiQueue);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (TimeoutException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
+//	@Bean
+//	public DeclareOk getDeclareOk() throws IOException, TimeoutException {
+//		Connection conn =null;
+//		Channel channel =null;
+//		try {
+//			conn= connectionFactory.newConnection();
+//			channel= conn.createChannel();
+//			return channel.queueDeclarePassive(buiQueue);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		} catch (TimeoutException e) {
+//			e.printStackTrace();
+//		}finally {
+//			channel.close();
+//			conn.close();
+//		}
+//		return null;
+//	}
 
 	@Bean//("cr-rabbit-executor")
 	public TaskExecutor taskExecutor() {

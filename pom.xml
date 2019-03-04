@@ -11,7 +11,8 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.0.5.RELEASE</version>
+<!-- 		<version>2.0.5.RELEASE</version> -->
+<version>2.1.2.RELEASE</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
@@ -37,9 +38,12 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-eureka-server</artifactId>
-			<version>1.4.6.RELEASE</version>
+			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+<!-- 			<artifactId>spring-cloud-starter-eureka-server</artifactId> -->
+<!-- 			<version>1.4.6.RELEASE</version> -->
+<!-- 			<version>2.1.0.RELEASE</version> -->
 		</dependency>
+		
 		<dependency>
 			<groupId>cr-queue-processor</groupId>
 			<artifactId>cr-queue-processor</artifactId>
@@ -68,22 +72,28 @@
 			<scope>test</scope>
 		</dependency>
 
-<!-- 		<dependency> -->
-<!-- 			<groupId>com.offbytwo.jenkins</groupId> -->
-<!-- 			<artifactId>jenkins-client</artifactId> -->
-<!-- 			<version>0.3.8</version> -->
-<!-- 		</dependency> -->
-		
-<!-- 		<dependency> -->
-<!--     <groupId>com.google.guava</groupId> -->
-<!--     <artifactId>guava</artifactId> -->
-<!--     <version>18.0</version> -->
-<!-- </dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>com.cdancy</groupId> -->
-<!-- 			<artifactId>jenkins-rest</artifactId> -->
-<!-- 			<version>0.0.14</version> -->
-<!-- 		</dependency> -->
+		<dependency>
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>3.1</version>
+		</dependency>
+
+		<!-- <dependency> -->
+		<!-- <groupId>com.offbytwo.jenkins</groupId> -->
+		<!-- <artifactId>jenkins-client</artifactId> -->
+		<!-- <version>0.3.8</version> -->
+		<!-- </dependency> -->
+
+		<!-- <dependency> -->
+		<!-- <groupId>com.google.guava</groupId> -->
+		<!-- <artifactId>guava</artifactId> -->
+		<!-- <version>18.0</version> -->
+		<!-- </dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>com.cdancy</groupId> -->
+		<!-- <artifactId>jenkins-rest</artifactId> -->
+		<!-- <version>0.0.14</version> -->
+		<!-- </dependency> -->
 
 
 
@@ -93,106 +103,250 @@
 			<artifactId>org.eclipse.jgit</artifactId>
 		</dependency>
 	</dependencies>
-<repositories>
-    <repository> 
-        <id>repository.spring.plugin-release</id> 
-        <name>Spring Plugins Repository</name> 
-        <url>http://repo.spring.io/plugins-release/</url> 
-    </repository>
-</repositories>
+	<repositories>
+		<repository>
+			<id>repository.spring.plugin-release</id>
+			<name>Spring Plugins Repository</name>
+			<url>http://repo.spring.io/plugins-release/</url>
+		</repository>
+	</repositories>
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>Finchley.SR1</version>
+<!-- 				<version>Finchley.SR1</version> -->
+				<version>Greenwich.RELEASE</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
-	<build>
-		<sourceDirectory>src/main/java</sourceDirectory>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-					<annotationProcessors>
 
-						<proc>cr.processor.QueueDefinitiondAnnotationProcessor</proc>
-					</annotationProcessors>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>add-source</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>add-source</goal>
-						</goals>
+	<profiles>
+		<profile>
+			<id>local</id>
+			<build>
+				<!-- <sourceDirectory>src/main/java</sourceDirectory> -->
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-compiler-plugin</artifactId>
 						<configuration>
-							<sources>
-								<source>${project.build.directory}/generated-sources/annotations</source>
-							</sources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>repackage</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<executable>true</executable>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>kill</id>
-						<phase>exec</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<executable>bash</executable>
-							<arguments>
-								<argument>kill.sh</argument>
-							</arguments>
-						</configuration>
-					</execution>
-					<execution>
-						<id>run</id>
-						<phase>exec</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<executable>java</executable>
-							<arguments>
-								<argument>-jar</argument>
-								<argument>${project.build.directory}/${project.build.finalName}.jar</argument>
-							</arguments>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+							<source>1.8</source>
+							<target>1.8</target>
+							<annotationProcessors>
 
-		</plugins>
-	</build>
+								<proc>cr.processor.QueueDefinitiondAnnotationProcessor</proc>
+							</annotationProcessors>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>add-source</id>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>add-source</goal>
+								</goals>
+								<configuration>
+									<sources>
+										<source>${project.build.directory}/generated-sources/annotations</source>
+									</sources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<goals>
+									<goal>repackage</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<executable>true</executable>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>kill</id>
+								<phase>exec</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>bash</executable>
+									<arguments>
+										<argument>kill.sh</argument>
+									</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>run</id>
+								<phase>exec</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>java</executable>
+									<arguments>
+										<argument>-jar</argument>
+										<argument>${project.build.directory}/${project.build.finalName}.jar</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>AWS</id>
+			<build>
+				<!-- <sourceDirectory>src/main/java</sourceDirectory> -->
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-compiler-plugin</artifactId>
+						<configuration>
+							<source>1.8</source>
+							<target>1.8</target>
+							<annotationProcessors>
+
+								<proc>cr.processor.QueueDefinitiondAnnotationProcessor</proc>
+							</annotationProcessors>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>add-source</id>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>add-source</goal>
+								</goals>
+								<configuration>
+									<sources>
+										<source>${project.build.directory}/generated-sources/annotations</source>
+									</sources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<goals>
+									<goal>repackage</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<executable>true</executable>
+						</configuration>
+					</plugin>
+
+					<!-- =========================================== -->
+					<!-- make sure antrun is after packaging plugins -->
+					<!-- =========================================== -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>scp-to-remote</id>
+								<phase>package</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<target>
+										<scp passphrase=""
+											localFile="${project.build.directory}/${project.build.finalName}.jar"
+											remoteToFile="ubuntu@10.151.80.133:/home/ubuntu/apps/cr-projectanalyzer/"
+											verbose="true"
+											keyfile="/home/fefe/Downloads/fr-securitypem.pem"
+											trust="true">
+										</scp>
+										<sshexec host="10.151.80.133" username="ubuntu"
+											trust="true"
+											keyfile="/home/fefe/Downloads/fr-securitypem.pem"
+											failonerror="true"
+											command="cd ; /etc/init.d/cr-projectanalyzer stop ; sleep 5 ; /etc/init.d/cr-projectanalyzer start ; tail -f apps/cr-projectanalyzer/log"
+											verbose="true" />
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+						<!-- libraries for scp impl -->
+						<!-- antrun doesn't use os's scp -->
+						<dependencies>
+							<dependency>
+								<groupId>com.jcraft</groupId>
+								<artifactId>jsch</artifactId>
+								<version>0.1.53</version>
+							</dependency>
+							<dependency>
+								<groupId>ant</groupId>
+								<artifactId>ant-jsch</artifactId>
+								<version>1.6.5</version>
+							</dependency>
+						</dependencies>
+					</plugin>
+					<!-- =========================================== -->
+					<!-- antrun plugin end -->
+					<!-- =========================================== -->
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>kill</id>
+								<phase>exec</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>bash</executable>
+									<arguments>
+										<argument>kill.sh</argument>
+									</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>run</id>
+								<phase>exec</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>java</executable>
+									<arguments>
+										<argument>-jar</argument>
+										<argument>${project.build.directory}/${project.build.finalName}.jar</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 </project>

@@ -2,6 +2,10 @@ package cr.listeners.helper;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +36,8 @@ public class BacklogAnalyzer {
 	private static final Logger log = LoggerFactory.getLogger(BacklogAnalyzer.class);
 	private static String encryption = ProjectAnalyzerApplication.class
 			.getAnnotation(cr.annotation.QueueDefinition.class).encryption();
-	@Autowired
-	private DeclareOk buiCounter;
+//	@Autowired
+//	private DeclareOk buiCounter;
 	@Autowired
 	private RPCClient client;
 	@Autowired
@@ -58,20 +62,26 @@ public class BacklogAnalyzer {
 	private void process() {
 		synchronized (backlogLock) {
 			try {
+				log.info("\n\n waiting notify for backlog check\n\n");
 				backlogLock.wait();
+				System.out.println("\n\n Received Notify \n\n");
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-		log.info("\n\nnotified\n\n"+buiCounter.getMessageCount()+"\n\n\n");
-		if (buiCounter.getMessageCount() == 0) {
-			Operation nop = new Operation("START_DEQUEUE_BUILDS");
-			client.sendAndReceiveBui(nop.toEncryptedMessage(encryption).encodeBase64()).decodeBase64ToObject();
-		} else {
 
-		}
+		//SHOULD I STOP DEQUEUE BUILD
+//		log.info("\n\nnotified\n\n"+buiCounter.getMessageCount()+"\n\n\n");
+//		if (buiCounter.getMessageCount() == 0) {
+//			Operation nop = new Operation("START_DEQUEUE_BUILDS");
+//			client.sendAndReceiveBui(nop.toEncryptedMessage(encryption).encodeBase64()).decodeBase64ToObject();
+//		} else {
+//
+//		}
+		
 		BuildRecord br = new BuildRecord();
 		br.setId(-1L);
+		br.setIdCommit(-1L);
 		br.setStatus("FIND_BACKLOG");
 		BuildRecordList builds = (BuildRecordList) (client
 				.sendAndReceiveDb(br.toEncryptedMessage(encryption).encodeBase64())).decodeBase64ToObject();
@@ -87,7 +97,7 @@ public class BacklogAnalyzer {
 			br = brl.get(i);
 			log.info("Going to search Project for "+br.toString());
 			log.info("Project id "+br.getIdRepository());
-			Project p = new Project(br.getIdRepository(), null, null, null, null);
+			Project p = new Project(br.getIdRepository(), null, null, null, null,null);
 			final Project pr = ((Project) client.sendAndReceiveDb(p.toEncryptedMessage(encryption).encodeBase64()).decodeBase64ToObject());
 			Optional<SecurityProject> osp = spList.stream()
 					.filter(s -> s.getLanguage().equals(pr.getLanguage()) && s.isAvailable()).findAny();
@@ -115,6 +125,7 @@ public class BacklogAnalyzer {
 		builds = (BuildRecordList) (client.sendAndReceiveDb(br.toEncryptedMessage(encryption).encodeBase64()))
 				.decodeBase64ToObject();
 		brl = builds.getBuilds();
+		log.info("Builds in queue: "+brl.size()); 
 		if (brl.size() == 0) {
 //			listenersreg.getListenerContainer("ana").start();
 //			log.info("ANALYZER DEQUEING STATUS REACTIVATED by " + this.getClass().getSimpleName() + "NOT RUNNING");
@@ -122,9 +133,27 @@ public class BacklogAnalyzer {
 			Operation o = client.sendAndReceiveBui(nop.toEncryptedMessage(encryption).encodeBase64()).decodeBase64ToObject();
 			log.info("START_DEQUEUE_ANALYSIS");
 		}else {
-			Operation nop = new Operation("STOP_DEQUEUE_ANALYSIS");
-			Operation o = client.sendAndReceiveBui(nop.toEncryptedMessage(encryption).encodeBase64()).decodeBase64ToObject();
-			log.info("STOP_DEQUEUE_ANALYSIS");
+			sp = new SecurityProject();
+			sp.setLanguage("%");
+			spList = ((SecurityProjectList) client
+					.sendAndReceiveDb(sp.toEncryptedMessage(encryption).encodeBase64()).decodeBase64ToObject())
+							.getProject();
+			
+			Stream<SecurityProject> targetStream = StreamSupport.stream(
+			          Spliterators.spliteratorUnknownSize(spList.iterator(), Spliterator.ORDERED),
+			          false);
+			
+			if(targetStream.allMatch(s->!s.isAvailable())) {
+				Operation nop = new Operation("STOP_DEQUEUE_ANALYSIS");
+				try {
+					Operation o = client.sendAndReceiveBui(nop.toEncryptedMessage(encryption).encodeBase64()).decodeBase64ToObject();
+					log.info("STOP_DEQUEUE_ANALYSIS");
+				}catch (Exception e) {
+					e.printStackTrace();
+				}
+				
+			}
+			
 		}
 	}
 }

@@ -22,8 +22,8 @@ public class ApplicationListener {
 			}
 		};
 	}
-	@Bean
-	public MessageListener messageListener() {
-		return new MessageListener();
-	}
+//	@Bean
+//	public MessageListener messageListener() {
+//		return new MessageListener();
+//	}
 }

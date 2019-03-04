@@ -49,7 +49,7 @@ public class JenkinsController {
 	
 	
 
-	@RequestMapping(path = "/build", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.TEXT_MARKDOWN_VALUE)
+	@RequestMapping(path = "/", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.TEXT_MARKDOWN_VALUE)
 	@ResponseStatus(HttpStatus.OK)
 	public void beforeBuild(@RequestBody String requestBody) {
 		log.info("Received request: " + requestBody);
@@ -73,13 +73,14 @@ public class JenkinsController {
 					sp.setId(br.getIdSecurityProject());
 					sp.setAvailable(true);
 					client.sendAndReceiveDb(sp.toEncryptedMessage(encryption).encodeBase64()).decodeBase64ToObject();
-					notifyBackLog();
+					
 					if(buildinfo.getVeracodeScan()!=null) {
 				    	msgSender.sendMessage(rabbitTemplate, applicationConfigReader.getResExchange(), applicationConfigReader.getResRoutingKey(), enc);
 				    }
+					notifyBackLog();
 			    }
 		    }else {
-		    	notifyBackLog();
+//		    	notifyBackLog();
 		    }
 		    
 		    
@@ -91,10 +92,11 @@ public class JenkinsController {
 //		System.out.println(!listenersreg.getListenerContainer("ana").isRunning() +" backlogLock:"+backlogLock);
 //	    if(!listenersreg.getListenerContainer("ana").isRunning()) {
 	    	synchronized (backlogLock) {
-	    		backlogLock.notify();
+	    		log.info("going to call notify");
+	    		backlogLock.notifyAll();
 			}
 	    	
-	    	log.info("called notify");
+	    	
 //	    }
 	}
 }

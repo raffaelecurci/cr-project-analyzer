@@ -129,7 +129,7 @@ public class _BuilderManager {
 		client.sendAndReceiveDb(br.toEncryptedMessage(encryption).encodeBase64());	
 	}
 
-	public String cloneProject(String projectToclone) {
+	public String cloneProject(String projectToclone,String branch) {
 		String destinationFolder=(storagePath.charAt(storagePath.length()-1)=='/'?storagePath:storagePath+"/")+new SimpleDateFormat("yyyyMMddHHmmss").format(new Date())+"_" ;
 		StringTokenizer st=new StringTokenizer(projectToclone, "//");
 		String protocol=st.nextToken();
@@ -146,7 +146,7 @@ public class _BuilderManager {
 		project=project.replace(".git", "");
 		String completeUrl=protocol+"//"+repoUsername+"@"+address;
 		RepoHandler r=new RepoHandler();
-		r.cloneRepo(destinationFolder+project, completeUrl, repoUsername, repoPasswd);
+		r.cloneRepo(destinationFolder+project, completeUrl,branch, repoUsername, repoPasswd);
 		return destinationFolder+project;
 	}
 	
@@ -192,7 +192,7 @@ public class _BuilderManager {
 			br.setDate(new Date());
 			br.setStatus("TOBUILD");
 			br.setIdRepository(p.getId());
-			String clonedProject=cloneProject(p.getUrl());
+			String clonedProject=cloneProject(p.getUrl(),p.getBranch());
 			String detectedLanguage=detectLanguage(clonedProject);
 			SecurityProject sp=new SecurityProject();
 			sp.setLanguage(detectedLanguage);
